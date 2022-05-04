@@ -8,48 +8,52 @@ head(df)
 str(df)
 summary(df)
 
-### ???? ????
+### One Variable
 
-# ????????ǥ
+# Table
 
 (tb <- with(df, table(region)))
-(tb <- tb[c("CBD", "GBD", "YBD", "ETC")])
-(tb <- with(df, table(region))[c("CBD", "GBD", "YBD", "ETC")])
+(tb <- tb[c("cbd", "gbd", "ybd", "etc")])
+(tb <- with(df, table(region))[c("cbd", "gbd", "ybd", "etc")])
 
-(tb <- xtabs(~region, df)[c("CBD", "GBD", "YBD", "ETC")])
+(tb <- xtabs(~region, df))
+(tb <- xtabs(~region, df)[c("cbd", "gbd", "ybd", "etc")])
+
 (prop.table(tb))
 
-# ????Ʈ: ????????ǥ
+# Bar chart
 
-plot(tb)   #tb?? class?? table
+plot(tb)
 
-(tb <- as.data.frame(tb))   #tb?? class?? dataframe��?? ????
+(tb <- as.data.frame(tb))
+
+plot(tb)
+
 gp <- ggplot(tb, aes(x=region, y=Freq)) +
   geom_col() +
   labs(x="region", y="frequency")
 gp
 
-# ????Ʈ: ??Ÿ?? ????
-
 gp <- ggplot(df) +
   geom_bar(aes(x=region)) +
-  scale_x_discrete(limits=c("CBD", "GBD", "YBD", "ETC")) +
   labs(x="region")
 gp
 
-# ????Ʈ: ??Ÿ?? ??��
+gp <- ggplot(df) +
+  geom_bar(aes(x=region)) +
+  scale_x_discrete(limits=c("cbd", "gbd", "ybd", "etc")) +
+  labs(x="region")
+gp
 
 gp <- ggplot(df) +
   geom_bar(aes(x=region, y=stat(prop), group=1), fill="skyblue") +
-  scale_x_discrete(limits=c("CBD", "GBD", "YBD", "ETC")) +
+  scale_x_discrete(limits=c("cbd", "gbd", "ybd", "etc")) +
   labs(x="region", y="Proportion")
 gp
 
-# ????Ʈ: ???η? ?迭
-
 gp + coord_flip()
 
-# ??????Ʈ
+# Pie Chart
 
 gp <- ggplot(df) +
   geom_bar(aes(x="", fill=region), width=1) +
@@ -58,59 +62,56 @@ gp <- ggplot(df) +
   theme_void()
 gp
 
+### Two Variables
 
+# Table
 
-### ???? ????
+(tb <- with(df, table(region, year))[c("cbd", "gbd", "ybd", "etc"),])
+(tb <- xtabs(~region+year, data=df)[c("cbd", "gbd", "ybd", "etc"),])
 
-# ????ǥ
+margin.table(tb, 1)
+margin.table(tb, 2)
+margin.table(tb)
 
-(tb <- with(df, table(region, year))[c("CBD", "GBD", "YBD", "ETC"),])
-(tb <- xtabs(~region+year, data=df)[c("CBD", "GBD", "YBD", "ETC"),])
-(tb <- prop.table(tb))
+apply(tb, 1, sum)
+apply(tb, 2, sum)
 
-margin.table(tb, 1)   #?? ?հ?
-margin.table(tb, 2)   #?? ?հ?
-margin.table(tb)   #???հ? ???ڷ? ????
-
-apply(tb, 1, sum)   #?? ?հ?
-apply(tb, 2, sum)   #?? ?հ?
+(addmargins(tb))
 
 prop.table(tb)
 
-(addmargins(tb))   #tb?? ??, ?? ?հ? ?߰?
 (addmargins(prop.table(tb)))
 
 library(gmodels)
+
 (with(df, CrossTable(region, year)))
 
-# ????Ʈ: ????ǥ
+# Bar Chart
 
 gp <- ggplot(as.data.frame(tb),
              aes(x=year, y=Freq, fill=region)) +
   geom_col()
 gp
 
-# ????Ʈ: ??Ÿ?? ????
-
 gp <- ggplot(df, aes(x=year, fill=region)) +
   geom_bar()
 gp
 
 gp <- ggplot(df, aes(x=year, fill=region)) +
-  geom_bar(position="dodge")   #?ٸ? ??��?? ????
+  geom_bar(position="dodge")
 gp
 
 gp <- ggplot(df, aes(x=year, fill=region)) +
-  geom_bar(position="dodge2")   #?? ???̿? ???? ?ֱ?
+  geom_bar(position="dodge2")
 gp
 
-# ????Ʈ: ??Ÿ?? ??��
-
-gp <- ggplot(df, aes(x=year, fill=region)) +   #???뵵?? ��?? ?ױ?
+gp <- ggplot(df, aes(x=year, fill=region)) +
   geom_bar(position="fill")
 gp
 
-gp <- ggplot(df, aes(x=region, y=stat(prop), group=1)) +   #???뵵?? ??��?? ????
+gp <- ggplot(df, aes(x=region, y=stat(prop), group=1)) +
   geom_bar() +
   facet_wrap(~year)
 gp
+
+rm(list=ls())

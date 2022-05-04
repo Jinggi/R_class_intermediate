@@ -5,6 +5,9 @@ library(ggplot2)
 
 # Bernoulli
 
+sample(c("H", "T"), size=1, replace=T)
+sample(c("H", "T"), size=1, replace=T, prob=c(.2, .8))
+
 sample(c("H", "T"), size=10, replace=T)
 sample(c("H", "T"), size=10, replace=T, prob=c(.2, .8))
 
@@ -18,12 +21,7 @@ rbinom(10, size=10, prob=.5)
 x <- 0:10
 plot(x, y=dbinom(x, size=10, prob=.5))
 
-data.frame(x, y=dbinom(x, size=10, prob=.5)) %>% 
-  ggplot(aes(x, y)) +
-  geom_col() +
-  labs(title="Binomial Distribution")
-
-tibble(x=1:10, y=dbinom(x, size=10, prob=.5)) %>% 
+tibble(x, y=dbinom(x, size=10, prob=.5)) %>% 
   ggplot(aes(x, y)) +
   geom_col() +
   labs(title="Binomial Distribution")
@@ -35,7 +33,7 @@ ppois(3, lambda=3)
 qpois(.5, lambda=3)
 rpois(10, lambda=3)
 
-tibble(x=0:11, y=dpois(x, lambda=3)) %>% 
+tibble(x=0:10, y=dpois(x, lambda=3)) %>% 
   ggplot(aes(x, y)) +
   geom_col() +
   labs(title="Poisson Distribution")
@@ -114,7 +112,7 @@ qf(.5, df1=3, df2=5)
 rf(10, df1=3, df2=5)
 
 ggplot(data.frame(x=c(0, 5)), aes(x)) +
-  stat_function(fun="df", args=list(df1=3, df2=5)) +   #?? F?????? "" ?ʿ??????
+  stat_function(fun="df", args=list(df1=3, df2=5)) +
   labs(title="F Distribution")
 
 rm(list=ls())
