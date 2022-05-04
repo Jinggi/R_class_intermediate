@@ -1,0 +1,207 @@
+library(dplyr)
+library(ggplot2)
+
+library(readxl)
+df <- read_excel("office_data.xlsx")
+
+head(df)
+str(df)
+summary(df)
+
+### ???? ????
+
+# ???????è·®
+
+mean(df$price)
+with(df, mean(price))
+
+summary(df$price)
+
+df %>% summarise(n=n(),
+                 na=sum(is.na(price)),
+                 mean=mean(price, na.rm=T),
+                 median=median(price, na.rm=T),
+                 min=min(price, na.rm=T),
+                 max=max(price, na.rm=T),
+                 range=diff(range(price, na.rm=T)),
+                 qu1=quantile(price, .25),
+                 qu3=quantile(price, .75))
+
+# ?Ú½??Ã·?
+
+gp <- ggplot(df, aes(x="", y=price)) +
+  geom_boxplot() +
+  labs(x="")
+gp
+
+gp + coord_flip()
+
+ggplot_build(gp)
+str(ggplot_build(gp)[[1]][[1]])   #???Â°??????? outlier Ã£??
+ggplot_build(gp)[[1]][[1]]$outliers[[1]]   #outlier?? ?????Ï±?
+
+# ???????×·?
+
+gp <- ggplot(df, aes(x=price))
+gp + geom_histogram()
+gp + geom_histogram(bins=10)
+gp + geom_histogram(binwidth=5000000)
+
+# È®???Ðµ??Ô¼?
+
+gp <- ggplot(df, aes(x=price))
+gp + geom_density()
+gp + geom_density(fill="skyblue") +
+  geom_rug() + xlim(0, 50000000)
+
+# ???????×·??? È®???Ðµ??Ô¼? ??Ä¡??
+
+gp <- ggplot(df, aes(x=price, y=stat(density))) +
+  geom_histogram(fill="red", bins=10) +
+  geom_density(color="blue") +
+  xlim(0, 50000000)
+gp
+
+gp <- ggplot(df, aes(x=price, y=stat(density))) +
+  geom_density(color="blue") +
+  geom_histogram(fill="red", bins=10, alpha=0.5) +   #???? ?Ù²??? ?????Ï°?
+  xlim(0, 50000000)
+gp
+
+
+
+### ???? ???? ????
+
+# ???????è·®
+
+(m1 <- matrix(1:12, nrow=3))
+(m2 <- matrix(1:12, nrow=3, byrow=T))
+
+colMeans(m1)
+colSums(m1)
+rowMeans(m2)
+rowSums(m2)
+
+(df1 <- as.data.frame(m1))
+(df2 <- as.data.frame(m2))
+
+colMeans(df1)
+colSums(df1)
+rowMeans(df2)
+rowSums(df2)
+
+(df <- df1 + df2)
+apply(df, 1, mean)
+apply(df, 2, mean)
+
+sapply(list(df$V1, df$V2, df$V3, df$V4), mean)
+
+df <- df %>%
+  pivot_longer(c(V1, V2, V3, V4),
+               names_to="group",
+               values_to="value")
+df$group <- as.factor(df$group)
+
+df
+tapply(df$value, df$group, mean)
+tapply(df$value, df$group, var)
+
+
+
+# ?Ú½??Ã·?À¸?? ????
+
+gp <- ggplot(df, aes(factor(region), price)) +
+  geom_boxplot() +
+  scale_x_discrete(limits=c("CBD", "GBD", "YBD", "ETC"))
+gp
+
+# ???????×·?À¸?? ????
+
+gp <- ggplot(df, aes(x=price)) +
+  geom_histogram(bins=10) +
+  facet_wrap(~region)   #?Ùµ??? ????
+gp
+
+gp <- ggplot(df, aes(x=price)) +
+  geom_histogram(bins=10) +
+  facet_wrap(~region, ncol=1)    #????À¸?? ????
+gp
+
+gp <- ggplot(df, aes(x=price, fill=factor(region))) +   #???Ä¼? ?×¸???
+  geom_histogram(bins=10, alpha=.5)
+gp
+
+# È®???Ðµ??Ô¼??? ????
+
+gp <- ggplot(df, aes(x=price)) +
+  geom_density() +
+  xlim(0, 50000000) +
+  facet_wrap(~region)   # ?Ùµ??? ????
+gp
+
+gp <- ggplot(df, aes(x=price)) +
+  geom_density() +
+  xlim(0, 50000000) +
+  facet_wrap(~region, ncol=1)    #????À¸?? ????
+gp
+
+gp <- ggplot(df, aes(x=price, fill=factor(region))) +   #???Ä¼? ?×¸???
+  geom_density(alpha=.5) +
+  xlim(0, 50000000)
+gp
+
+
+
+### ???? ???? ????
+
+# ???????è·®
+
+attach(df)
+
+cor(price, rent, use="everything", method=c("pearson"))   #???Í¿? ???? ????????
+cor(price, rent, use="complete", method=c("pearson"))   #NA Á¦??
+cor(price, rent, use="everything", method=c("kendall"))    #??À§????
+cor(price, rent, use="everything", method=c("spearman"))    #??À§????
+
+cor(df[, 1:3], use="everything", method=c("pearson"))   #???????Á·??? ???? ??
+
+# ?? ???? ??Á¡??: ????Àº geom ?È¿? ??À¸?? ??Á¤
+
+gp <- ggplot(df, aes(x=price, y=rent)) +
+  geom_point(shape=21, color="red", fill="red", size=3)
+gp
+
+# ???? ?ß°?: ????Àº aes ?È¿? ?????? ??Á¤. ??????, ?????? ???? ????
+
+gp <- ggplot(df, aes(x=price, y=rent, color=region, fill=region)) +
+  geom_point(shape=21, size=3)
+gp
+
+# È¸?Í¼? ?ß°?: ???? ?ß°??? ???? ?? ?×·ì¸¶?? È¸?Í¼? ?ß°???
+
+gp + geom_smooth(method="lm")   #????È¸?Í¼?
+gp + geom_smooth(method="lm", se=F)   #?Å·Ú±??? Á¦??
+gp + geom_smooth()   #LOESS(Local Regression)
+gp + geom_smooth(se=F)   #?Å·Ú±??? Á¦??
+
+# ???? ?ß°?
+
+gp + geom_hline(aes(yintercept=mean(rent), color="red")) +   #??????
+  geom_vline(aes(xintercept=mean(price), color="blue")) +   #??????
+  geom_abline(aes(slope=.01, intercept=0, color="skyblue"))   #?????? ????
+
+# ???? ?ß°?
+
+gp + geom_text(aes(label=i),
+               nudge_x = 10000, nudge_y = 5000)
+
+
+# ???Íº??? ?×¸???
+
+gp + facet_wrap(~region, ncol=2, dir="v")
+
+# ??Á¡?? ????: ?????? ?????? boxplot, bar ??À¸?? Ã³????
+
+library(GGally)
+ggcorr(df, method=c("pairwise", "pearson"), label=T, label_round=2)   #???????????Ä±×·???
+ggpairs(df, lower=list(continuous="smooth"))   #?×·??Á·?   #??Á¡?????Ä±×·???
