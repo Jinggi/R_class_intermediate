@@ -8,84 +8,126 @@ head(df)
 str(df)
 summary(df)
 
-tabs(~region+year, data=df)[c("CBD", "GBD", "YBD", "ETC"),])
+### Categorical
+
+# Independence
+
+chisq.test(df$region, df$year)
+chisq.test(df$region, df$year, simulate.p.value=T)
+
+(tb <- xtabs(~region+year, data=df)[c("cbd", "gbd", "ybd", "etc"),])
 
 chisq.test(tb)
-chisq.test(tb, simulate.p.value=T)   #Ç¥??Å©?? ??À» ???? ????Ä«???? ?Ã¹Ä·??Ì¼?
+chisq.test(tb, simulate.p.value=T)
 
 fisher.test(tb, conf.level=.95, alternative=c("two.sided"))
 fisher.test(tb, conf.level=.95, alternative=c("two.sided"), simulate.p.value=T)
 
+library(vcd)
 
+assocstats(tb)
+mosaic(tb, shade=T)
 
-### ?????? ?????? ??Á¤
+# Goodness of fit
 
-# ?? ??????, ?????? ??Á¤
+apply(tb, 1, sum)
+apply(prop.table(tb), 1, sum)
 
-t.test(price, mu=15000000, conf.level=.95, alternative=c("two.sided"))
-t.test(price, mu=15000000, conf.level=.95, alternative=c("less"))
-t.test(price, mu=15000000, conf.level=.95, alternative=c("greater"))
+chisq.test(apply(tb, 1, sum))
+chisq.test(apply(tb, 1, sum), c(.3, .4, .2, .1))
+chisq.test(apply(tb, 1, sum), c(.3, .4, .2, .1), simulate.p.value=T)
 
-# ?? ??????, ?????? ???? ??Á¤
+### Numeric
+
+# Mean: One Sample
+
+t.test(df$price, mu=15000000, conf.level=.95, alternative=c("two.sided"))
+t.test(df$price, mu=15000000, conf.level=.95, alternative=c("less"))
+t.test(df$price, mu=15000000, conf.level=.95, alternative=c("greater"))
+
+# Mean: Two Samples
 
 df <- df %>% mutate(size=ifelse(gfa>=15000, "big", "small"))
 
-var.test(price~size, ratio=1, conf.level=.95, alternative=c("two.sided"))   #???Ð»? ??Á¤
-t.test(price~size, var.equal=T, conf.level=.95, alternative=c("two.sided"))
-t.test(price~size, var.equal=F, conf.level=.95, alternative=c("two.sided"))
+var.test(df$price~df$size, ratio=1, conf.level=.95, alternative=c("two.sided"))
+t.test(df$price~df$size, var.equal=T, conf.level=.95, alternative=c("two.sided"))
+t.test(df$price~df$size, var.equal=F, conf.level=.95, alternative=c("two.sided"))
 
-v1 <- price[size=="big"]
-v2 <- price[size=="small"]
+p1 <- df$price[df$size=="big"]
+p2 <- df$price[df$size=="small"]
 
-var.test(v1, v2, ratio=1, conf.level=.95, alternative=c("two.sided"))
-t.test(v1, v2, var.equal=T, conf.level=.95, alternative=c("two.sided"))
-t.test(v1, v2, var.equal=F, conf.level=.95, alternative=c("two.sided"))
+var.test(p1, p2, ratio=1, conf.level=.95, alternative=c("two.sided"))
+t.test(p1, p2, var.equal=T, conf.level=.95, alternative=c("two.sided"))
+t.test(p1, p2, var.equal=F, conf.level=.95, alternative=c("two.sided"))
 
-t.test(v1, v2, paired=T, conf.level=.95, alternative=c("two.sided"))  #?Ö´?????
-t.test(v~f, paired=T, conf.level=.95, alternative=c("two.sided"))
+(p3 <- df$price[df$year=="2019"])
+(p4 <- df$price[df$year=="2020"])
+(p <- c(p3, p4))
+(y <- factor(rep(c(1, 2), c(18, 18))))
 
-# ?? ??????, ????À² ??Á¤
-# n?? ???à¿¡?? x?? ?????Ç¾?À» ??, ?ß»?È®??À» p???? ?? ?? ?Ö´Â°??
+t.test(p3, p4, paired=T, conf.le3el=.95, alternative=c("two.sided"))
+t.test(p~y, paired=T, conf.level=.95, alternative=c("two.sided"))
 
-prop.test(x=1000, n=10000, p=.15, conf.level=.95, alternative=c("two.sided"))
-binom.test(x=1000, n=10000, p=.15, conf.level=.95, alternative=c("two.sided"))
+# Proportion: One Sample
 
-# ?? ??????, ????À² ???? ??Á¤
+apply(tb, 1, sum)
+apply(prop.table(tb), 1, sum)
 
-prop.test(x=c(1000, 500), n=c(10000, 800), conf.level=.95, alternative=c("two.sided"))
+prop.test(x=16, n=50, p=.3, conf.level=.95, alternative=c("two.sided"))
+binom.test(x=16, n=50, p=.3, conf.level=.95, alternative=c("two.sided"))
 
-# ?? ??????, ???Ð»? ???? ??Á¤
+# Proportion: Two Samples
 
-var.test(v1, v2)   #F??Á¤
+prop.test(x=c(16, 19), n=c(50, 50), conf.level=.95, alternative=c("two.sided"))
 
+# Variance: Two Samples
 
+var.test(v1, v2)
 
-### Á¤?Ô¼? ??Á¤
+# Correlation
 
-shapiro.test(price)
-shapiro.test(log(price))   #Á¤?Ôº??? ???? ?Ê´? ???? ?Î±×º?È¯
+cor(data.frame(df$price, df$rent, df$gfa))
 
-ggplot(df, aes(sample=price)) +   #??À§??-??À§?? ?×·??? ?Û¼?
+cor.test(df$price, df$rent)
+cor.test(~df$price+df$rent)
+
+library(psych)
+
+corr.test(data.frame(df$price, df$rent, df$gfa))
+print(corr.test(data.frame(df$price, df$rent, df$gfa)), short=F)
+pairs.panels(data.frame(df$price, df$rent, df$gfa))
+
+library(corrgram)
+
+corrgram(data.frame(df$price, df$rent, df$gfa))
+
+# Normality
+
+shapiro.test(df$price)
+ggplot(df, aes(sample=price)) +
   geom_qq() +
   geom_qq_line()
 
-df %>% 
-  mutate(lnp=log(price)) %>%   #Á¤?Ôº??? ???? ?Ê´? ???? ?Î±×º?È¯
-  ggplot(aes(sample=lnp)) +
-    geom_qq() +
-    geom_qq_line()
+shapiro.test(df$ln_price)
+ggplot(df, aes(sample=ln_price)) +
+  geom_qq() +
+  geom_qq_line()
 
+### Non-parametric
 
+# One Sample
 
-### ?????? ??Á¤
+wilcox.test(df$price, mu=15000000,
+            conf.level=.95, conf.int=T, alternative=c("two.sided"))
 
-#?? ?????? ?ß½É¿? ???? ?????? ??Á¤
+# Two Samples
 
-wilcox.test(price, mu=15000000, conf.level=.95, conf.int=T, alternative=c("two.sided"))
+wilcox.test(df$price~df$size, mu=0,
+            conf.level=.95, conf.int=T, alternative=c("two.sided"))
 
-#?? ?????? ?ß½? ???Ì¿? ???? ?????? ??Á¤
+wilcox.test(p1, p2, mu=0,
+            conf.level=.95, conf.int=T, alternative=c("two.sided"))
 
-wilcox.test(price~size, mu=0, conf.level=.95, conf.int=T, alternative=c("two.sided"))
-wilcox.test(v1, v2, mu=0, conf.level=.95, conf.int=T, alternative=c("two.sided"))
+ks.test(p1, p2)
 
-ks.test(v1, v2)
+rm(list=ls())
