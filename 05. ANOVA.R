@@ -10,50 +10,90 @@ summary(df)
 
 ### One-way
 
-# ???? ???? ??Á¤
+# Estimation
 
 df$region
-df$region <- factor(df$region, levels=c("ETC", "CBD", "GBD", "YBD"))
-df$region   #?????? ??Á¤?Ï¿?À¸?Ç·? ?Ç¾? ETC?? ???Øº???
+df$region <- factor(df$region, levels=c("etc", "cbd", "gbd", "ybd"))
+df$region
 
-(fit <- aov(price ~ region, df))
+(aov <- aov(price ~ region, df))
 
-summary(fit)
-summary.lm(fit)
+summary(aov)
+summary.lm(aov)
 
-plot(fit)
+model.tables(aov, type="mean")
+model.tables(aov, type="effects")
 
-# ???Ð»? ??Á¤
+TukeyHSD(aov)
+plot(TukeyHSD(aov))
 
-fligner.test(price ~ region, df)
+# Post hoc Analysis
+
+plot(aov)
+
+shapiro.test(df$price)
+
 bartlett.test(price ~ region, df)
+fligner.test(price ~ region, df)
 
-
+oneway.test(price ~ region, df)
 
 ### Two-way
 
-# ???? ???? ??Á¤
+# Estimation
 
 df$year <- factor(df$year)
 
-fit1 <- aov(price ~ region + year, df)
-summary(fit1)
-summary.lm(fit1)
+aov1 <- aov(price ~ region + year, df)
+summary(aov1)
+summary.lm(aov1)
 
-fit2 <- aov(price ~ region * year, df)
-summary(fit2)
-summary.lm(fit2)
+model.tables(aov1, type="mean")
+model.tables(aov1, type="effects")
 
-anova(fit1, fit2)
+TukeyHSD(aov1)
+plot(TukeyHSD(aov1))
 
+aov2 <- aov(price ~ region * year, df)
+summary(aov2)
+summary.lm(aov2)
 
+model.tables(aov2, type="mean")
+model.tables(aov2, type="effects")
 
-### ANCOVA: avo, lm ???? ????
+TukeyHSD(aov2)
+plot(TukeyHSD(aov2))
 
-fit1 <- aov(price ~ region + year + rent + metro + gfa, df)
-summary(fit1)
-summary.lm(fit1)
+anova(aov1, aov2)
 
-fit2 <- lm(price ~ region + year + rent + metro + gfa, df)
-anova(fit2)
-summary(fit2)
+# Post hoc Analysis
+
+plot(aov2)
+
+shapiro.test(df$price)
+
+bartlett.test(price ~ region, df)
+fligner.test(price ~ region, df)
+
+bartlett.test(price ~ year, df)
+fligner.test(price ~ year, df)
+
+### ANCOVA
+
+aov3 <- aov(price ~ region + year + metro + gfa, df)
+summary(aov3)
+summary.lm(aov3)
+
+ols3 <- lm(price ~ region + year + metro + gfa, df)
+anova(ols3)
+summary(ols3)
+
+### MANOVA
+
+y <- cbind(df$price, df$rent)
+
+aov4 <- manova(y ~ region + year + metro + gfa, df)
+summary(aov4)
+summary.lm(aov4)
+
+rm(list=ls())
