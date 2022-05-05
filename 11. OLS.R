@@ -171,7 +171,13 @@ library(car)
 ncvTest(ols)
 hccm(ols)
 
+w <- 1/fitted(lm(abs(resid(ols)) ~ fitted(ols)))^2
 wls <- lm(price ~ rent + gfa, df, weight = w)
+summary(wls)
+
+library(nlme)
+gls <- gls(price ~ rent + gfa, df, weights = varPower())
+summary(gls)
 
 library(MASS)
 rls <- rlm(price ~ rent + gfa, df)
